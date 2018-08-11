@@ -1,10 +1,10 @@
 [Unit]
-Description=Create AP Service
+Description=Berate AP Service
 After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/create_ap --config /etc/create_ap.conf
+ExecStart=/usr/bin/berate_ap --config /etc/berate_ap.conf
 KillSignal=SIGINT
 Restart=on-failure
 RestartSec=5
