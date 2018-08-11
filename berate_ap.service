@@ -1,0 +1,13 @@
+[Unit]
+Description=Berate AP Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/berate_ap --config /etc/berate_ap.conf
+KillSignal=SIGINT
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
