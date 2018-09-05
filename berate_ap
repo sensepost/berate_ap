@@ -1145,7 +1145,8 @@ while :; do
             ;;
         --mana-credout)
             shift
-            ENODE="$1"
+            MANA_CREDOUT="$1"
+            shift
             ;;
         --nas-ident)
             shift
