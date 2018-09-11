@@ -69,17 +69,7 @@ Run Mana and be stingy by not providing any upstream Internet access:
 
 ## Installation
 ### Generic
-    git clone https://github.com/oblique/create_ap
-    cd create_ap
-    make install
-
-### ArchLinux
-    pacman -S create_ap
-
-### Gentoo
-    emerge layman
-    layman -f -a jorgicio
-    emerge net-wireless/create_ap
+    git clone https://github.com/sensepost/berate_ap
 
 ## Examples
 ### No passphrase (open network):
