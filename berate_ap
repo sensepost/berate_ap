@@ -1442,7 +1442,11 @@ if ! can_be_sta_and_ap ${WIFI_IFACE}; then
     fi
 fi
 
-HOSTAPD=$(which hostapd-mana)
+if [ $MANA -eq 1 ]; then
+    HOSTAPD=$(which hostapd-mana)
+else
+    HOSTAPD=$(which hostapd)
+fi
 
 if [[ ! -x "$HOSTAPD" ]]; then
     echo "ERROR: hostapd not found." >&2
