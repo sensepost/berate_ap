@@ -1,5 +1,5 @@
 # Berate_ap 
-Create_ap has been modified to run [hostapd-mana](https://github.com/sensepost/hostapd-mana) with multiple options
+Create_ap has been modified to run EAP networks and [hostapd-mana](https://github.com/sensepost/hostapd-mana) with multiple options
 
 ## Setup
 This script requires hostapd-mana to be in the path.
@@ -20,23 +20,23 @@ sudo ln -s /path/to/hostapd-mana hostapd-mana
 
 Run Mana to trick users into connecting to your access point. The eap users file is not passed so that the default mana eap user file is used: 
 
-    create_ap --eap --mana wlan0 eth0 MyAccessPoint 
+    berate_ap --eap --mana wlan0 eth0 MyAccessPoint 
 
 Run Mana in loud mode to show devices every access point seen by Mana:
 
-    create_ap --eap --mana --mana-loud wlan0 eth0 MyAccessPoint 
+    berate_ap --eap --mana --mana-loud wlan0 eth0 MyAccessPoint 
 
 Run Mana and bridge the network connection to your ethernet address: 
 
-    create_ap --eap --mana -m bridge wlan0 eth0 MyAccessPoint 
+    berate_ap --eap --mana -m bridge wlan0 eth0 MyAccessPoint 
 
 Run Mana and be stingy by not providing any upstream Internet access:
 
-    create_ap --eap --mana -n wlan0 MyAccessPoint  
+    berate_ap --eap --mana -n wlan0 MyAccessPoint  
 
 <!--Run Mana and host one of each network type to catch as many people as possible.
 
-    create_ap --trifecta --mana wlan0 eth0 MyAccessPoint -->
+    berate_ap --trifecta --mana wlan0 eth0 MyAccessPoint -->
 
 ## Features
 * Create an AP (Access Point) at any channel.
@@ -73,43 +73,43 @@ Run Mana and be stingy by not providing any upstream Internet access:
 
 ## Examples
 ### No passphrase (open network):
-    create_ap wlan0 eth0 MyAccessPoint
+    berate_ap wlan0 eth0 MyAccessPoint
 
 ### WPA + WPA2 passphrase:
-    create_ap wlan0 eth0 MyAccessPoint MyPassPhrase
+    berate_ap wlan0 eth0 MyAccessPoint MyPassPhrase
 
 ### AP without Internet sharing:
-    create_ap -n wlan0 MyAccessPoint MyPassPhrase
+    berate_ap -n wlan0 MyAccessPoint MyPassPhrase
 
 ### Bridged Internet sharing:
-    create_ap -m bridge wlan0 eth0 MyAccessPoint MyPassPhrase
+    berate_ap -m bridge wlan0 eth0 MyAccessPoint MyPassPhrase
 
 ### Bridged Internet sharing (pre-configured bridge interface):
-    create_ap -m bridge wlan0 br0 MyAccessPoint MyPassPhrase
+    berate_ap -m bridge wlan0 br0 MyAccessPoint MyPassPhrase
 
 ### Internet sharing from the same WiFi interface:
-    create_ap wlan0 wlan0 MyAccessPoint MyPassPhrase
+    berate_ap wlan0 wlan0 MyAccessPoint MyPassPhrase
 
 ### Choose a different WiFi adapter driver
-    create_ap --driver rtl871xdrv wlan0 eth0 MyAccessPoint MyPassPhrase
+    berate_ap --driver rtl871xdrv wlan0 eth0 MyAccessPoint MyPassPhrase
 
 ### No passphrase (open network) using pipe:
-    echo -e "MyAccessPoint" | create_ap wlan0 eth0
+    echo -e "MyAccessPoint" | berate_ap wlan0 eth0
 
 ### WPA + WPA2 passphrase using pipe:
-    echo -e "MyAccessPoint\nMyPassPhrase" | create_ap wlan0 eth0
+    echo -e "MyAccessPoint\nMyPassPhrase" | berate_ap wlan0 eth0
 
 ### Enable IEEE 802.11n
-    create_ap --ieee80211n --ht_capab '[HT40+]' wlan0 eth0 MyAccessPoint MyPassPhrase
+    berate_ap --ieee80211n --ht_capab '[HT40+]' wlan0 eth0 MyAccessPoint MyPassPhrase
 
 ### Client Isolation:
-    create_ap --isolate-clients wlan0 eth0 MyAccessPoint MyPassPhrase
+    berate_ap --isolate-clients wlan0 eth0 MyAccessPoint MyPassPhrase
 
 ### Enterprise Network built-in RADIUS
-    create_ap --eap --eap-user-file /tmp/users.eap_hosts --eap-cert-path /tmp/certificates wlan0 eth0 MyAccessPoint 
+    berate_ap --eap --eap-user-file /tmp/users.eap_hosts --eap-cert-path /tmp/certificates wlan0 eth0 MyAccessPoint 
 
 ### Enterprise Network Remote RADIUS
-    create_ap --eap --radius-server 192.168.1.1:1812 --radius-secret=P@ssw0rd wlan0 eth0 MyAccessPoint
+    berate_ap --eap --radius-server 192.168.1.1:1812 --radius-secret=P@ssw0rd wlan0 eth0 MyAccessPoint
 
 ## Systemd service
 Using the persistent [systemd](https://wiki.archlinux.org/index.php/systemd#Basic_systemctl_usage) service
