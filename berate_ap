@@ -89,30 +89,30 @@ usage() {
     echo "                          You will be prompted to generate a cert if no path is provided"
     echo "  --eap-key-passwd        If key requires a password"
     echo 
-    echo "                          *WPE*"
-    echo "  --mana-wpe              Enable WPE mode"
-    echo "                          Will intercept various EAP credentials"
-    echo "  --mana-credout          Set location of output creds file"
-    echo "                          Default location is at /tmp/hostapd.credout"
-    echo "  --mana-eapsuccess       Always return an EAP success message"
-    echo "  --mana-eaptls           Accept any EAP-TLS client certificate"
-    echo 
     echo "                          *Use external RADIUS server*"
     echo "  --radius-server         Use an external RADIUS server rather than built in"
     echo "                          Default port is 1812"
     echo "                              --remote-radius <ip address>[:port]"
     echo "  --radius-secret         Provide shared RADIUS secret"
     echo
-    echo "Mana Options:"
+    echo "Mana WPE Options:"
+    echo "  --mana-wpe              Enable WPE mode"
+    echo "                          Will intercept various EAP credentials"
+    echo "  --mana-credout <file>   Set location of output creds file"
+    echo "                          Default location is at /tmp/hostapd.credout"
+    echo "  --mana-eapsuccess       Always return an EAP success message"
+    echo "  --mana-eaptls           Accept any EAP-TLS client certificate"
+    echo
+    echo "Mana/Karma Options:"
     echo "  --mana                  Enable Mana Attack"
     echo "                          Will respond affirmative to all device access point probes"
     echo "  --mana-loud             Enable Mana loud mode"
     echo "                          Will respond with all seen access points to devices"
     echo "  --mana-whitelist <list> Provide a list of SSIDs to respond to"
     echo
-    echo "Arbitary:"
-    echo "  --trifecta             Run one EAP, PSK and OPEN network"
-    echo 
+    # echo "Arbitary:"
+    # echo "  --trifecta             Run one EAP, PSK and OPEN network"
+    # echo 
     echo "Non-Bridging Options:"
     echo "  --no-dns                Disable dnsmasq DNS server"
     echo "  --no-dnsmasq            Disable dnsmasq server completely"
@@ -1829,15 +1829,11 @@ dh_file=${ENTERPRISE_CERTIFICATES_LOCATION}/hostapd.dh.pem
 private_key=${ENTERPRISE_CERTIFICATES_LOCATION}/hostapd.key.pem
 private_key_passwd=${ENTERPRISE_PRIVATE_KEY_PASSWD}
 
-mana_wpe=${MANA_WPE}
-mana_eapsuccess=${MANA_EAPSUCCESS}
-mana_eaptls=${MANA_EAPTLS}
-mana_credout=${MANA_CREDOUT}
-
 auth_algs=3
 wpa=${WPA_VERSION}
 wpa_key_mgmt=WPA-EAP
 wpa_pairwise=CCMP TKIP
+
 EOF
     fi
 fi
@@ -1858,6 +1854,40 @@ bss=${WIFI_IFACE}_1
 ssid=AlwaysOn
 ignore_broadcast_ssid=1
 auth_algs=3
+EOF
+fi
+
+if [[ $ENTERPRISE -eq 0 ]] && [[ $MANA_WPE -eq 1 ]]; then
+    echo "Please Enable EAP if wanting to perform WPE Attacks"
+    clean_exit
+fi 
+
+if [[ $ENTERPRISE -eq 1 ]] && [[ $MANA_WPE -eq 1 ]]; then
+    cat << EOF >> $CONFDIR/hostapd.conf
+mana_wpe=1
+mana_credout=${MANA_CREDOUT}
+EOF
+fi
+
+if [[ $ENTERPRISE -eq 0 ]] && [[ $MANA_EAPSUCCESS -eq 1 ]]; then
+    echo "Please Enable EAP if wanting to perform WPE Attacks"
+    clean_exit
+fi 
+
+if [[ $ENTERPRISE -eq 1 ]] && [[ $MANA_EAPSUCCESS -eq 1 ]]; then
+    cat << EOF >> $CONFDIR/hostapd.conf
+mana_eapsuccess=1
+EOF
+fi
+
+if [[ $ENTERPRISE -eq 0 ]] && [[ $MANA_EAPTLS -eq 1 ]]; then
+    echo "Please Enable EAP if wanting to perform WPE Attacks"
+    clean_exit
+fi 
+
+if [[ $ENTERPRISE -eq 1 ]] && [[ $MANA_EAPTLS -eq 1 ]]; then
+    cat << EOF >> $CONFDIR/hostapd.conf
+mana_eaptls=1
 EOF
 fi
 
