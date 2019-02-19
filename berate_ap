@@ -14,7 +14,7 @@
 #    dnsmasq
 #    iptables
 
-VERSION=0.4.6
+VERSION=0.4.7
 PROGNAME="$(basename $0)"
 
 # make sure that all command outputs are in english
@@ -89,19 +89,25 @@ usage() {
     echo "                          You will be prompted to generate a cert if no path is provided"
     echo "  --eap-key-passwd        If key requires a password"
     echo 
+    echo "                          *WPE*"
+    echo "  --mana-wpe              Enable WPE mode"
+    echo "                          Will intercept various EAP credentials"
+    echo "  --mana-credout          Set location of output creds file"
+    echo "                          Default location is at /tmp/hostapd.credout"
+    echo "  --mana-eapsuccess       Always return an EAP success message"
+    echo "  --mana-eaptls           Accept any EAP-TLS client certificate"
+    echo 
     echo "                          *Use external RADIUS server*"
     echo "  --radius-server         Use an external RADIUS server rather than built in"
     echo "                          Default port is 1812"
     echo "                              --remote-radius <ip address>[:port]"
     echo "  --radius-secret         Provide shared RADIUS secret"
-    echo 
+    echo
     echo "Mana Options:"
     echo "  --mana                  Enable Mana Attack"
     echo "                          Will respond affirmative to all device access point probes"
     echo "  --mana-loud             Enable Mana loud mode"
     echo "                          Will respond with all seen access points to devices"
-    echo "  --mana-credout          Set location of creds file"
-    echo "                          Default location is at /tmp/hostapd.credout"
     echo "  --mana-whitelist <list> Provide a list of SSIDs to respond to"
     echo
     echo "Arbitary:"
@@ -656,6 +662,9 @@ ENTERPRISE=0
 ENTERPRISE_CERTIFICATES_LOCATION=
 ENTERPRISE_EAPUSER_FILE=
 ENTERPRISE_PRIVATE_KEY_PASSWD=
+MANA_WPE=0
+MANA_EAPSUCCESS=0
+MANA_EAPTLS=0
 MANA=0
 MANA_LOUD=0
 MANA_CREDOUT=/tmp/hostapd.credout
@@ -686,7 +695,7 @@ REDIRECT_TO_LOCALHOST=0
 CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HIDDEN MAC_FILTER MAC_FILTER_ACCEPT ISOLATE_CLIENTS
              SHARE_METHOD IEEE80211N IEEE80211AC HT_CAPAB VHT_CAPAB DRIVER NO_VIRT COUNTRY FREQ_BAND
              NEW_MACADDR DAEMONIZE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
-             SSID PASSPHRASE USE_PSK ENTERPRISE ENTERPRISE_CERTIFICATES_LOCATION ENTERPRISE_EAPUSER_FILE ENTERPRISE_PRIVATE_KEY_PASSWD 
+             SSID PASSPHRASE USE_PSK ENTERPRISE ENTERPRISE_CERTIFICATES_LOCATION ENTERPRISE_EAPUSER_FILE ENTERPRISE_PRIVATE_KEY_PASSWD MANA_WPE MANA_EAPSUCCESS MANA_EAPTLS
              RADIUS_SECRET RADIUS_SERVER NAS_IDENT MANA_LOUD MANA MANA_SSID_WHITELIST MANA_MAC_ACL TRIFECTA MANA_CREDOUT)
 
 FIX_UNMANAGED=0
@@ -1078,7 +1087,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1115,6 +1124,18 @@ while :; do
             ENTERPRISE_PRIVATE_KEY_PASSWD="$1"
             shift
             ;; 
+        --mana-wpe)
+            shift
+            MANA_WPE=1
+            ;;
+        --mana-eapsuccess)
+            shift
+            MANA_EAPSUCCESS=1
+            ;;
+        --mana-eaptls)
+            shift
+            MANA_EAPTLS=1
+            ;;
         --radius-server)
             shift
             read RADIUS_SERVER RADIUS_PORT <<< "${1//:/ }"
@@ -1808,6 +1829,11 @@ dh_file=${ENTERPRISE_CERTIFICATES_LOCATION}/hostapd.dh.pem
 private_key=${ENTERPRISE_CERTIFICATES_LOCATION}/hostapd.key.pem
 private_key_passwd=${ENTERPRISE_PRIVATE_KEY_PASSWD}
 
+mana_wpe=${MANA_WPE}
+mana_eapsuccess=${MANA_EAPSUCCESS}
+mana_eaptls=${MANA_EAPTLS}
+mana_credout=${MANA_CREDOUT}
+
 auth_algs=3
 wpa=${WPA_VERSION}
 wpa_key_mgmt=WPA-EAP
@@ -1838,8 +1864,6 @@ fi
 if [[ $MANA -eq 1 ]]; then
     cat << EOF >> $CONFDIR/hostapd.conf
 enable_mana=1
-mana_wpe=1
-mana_credout=${MANA_CREDOUT}
 EOF
 fi
 
