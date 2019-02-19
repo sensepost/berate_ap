@@ -21,6 +21,12 @@ sudo ln -s /path/to/hostapd-mana hostapd-mana
 Run Mana to trick users into connecting to your access point. The eap users file is not passed so that the default mana eap user file is used: 
 
     berate_ap --eap --mana wlan0 eth0 MyAccessPoint 
+    
+Mana WPE attacks are no longer done by default when using `--mana` and have to be enabled seperatly:
+
+    berate_ap --eap --mana-wpe wlan0 eth0 MyAccessPoint
+    
+Other Mana WPE options avaliable are `--mana-eapsuccess` and `--mana-eaptls`, the location of the credout file is by default `/tmp/hostapd.credout` but may be specified with `--mana-credout <file>` (Preferable to use full path). More information on these may be found in the [Hostapd-mana wiki](https://github.com/sensepost/hostapd-mana/wiki/MANA-EAP-Options-(aka-WPE)).
 
 Run Mana in loud mode to show devices every access point seen by Mana:
 
