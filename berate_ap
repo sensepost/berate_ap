@@ -1777,6 +1777,11 @@ bssid=00:11:22:33:44:00
 EOF
 fi
 
+if [[ $ENTERPRISE -eq 0 ]] && [[ $MANA_WPE -eq 1 ]]; then
+    echo "WPE attacks require the use of enterprise networks, so enabling EAP access point."
+    ENTERPRISE=1
+fi
+
 if [[ $ENTERPRISE -eq 1 ]] && [[ -z $ENTERPRISE_CERTIFICATES_LOCATION ]] && [[ -z $RADIUS_SERVER ]]; then
     echo "Please Provide Certificate Details"
     $(which openssl) req -nodes -new -x509 -keyout $CONFDIR/hostapd.key.pem -out $CONFDIR/hostapd.cert.pem
@@ -1857,11 +1862,6 @@ auth_algs=3
 EOF
 fi
 
-if [[ $ENTERPRISE -eq 0 ]] && [[ $MANA_WPE -eq 1 ]]; then
-    echo "Please Enable EAP if wanting to perform WPE Attacks"
-    clean_exit
-fi 
-
 if [[ $ENTERPRISE -eq 1 ]] && [[ $MANA_WPE -eq 1 ]]; then
     cat << EOF >> $CONFDIR/hostapd.conf
 mana_wpe=1
@@ -1869,21 +1869,11 @@ mana_credout=${MANA_CREDOUT}
 EOF
 fi
 
-if [[ $ENTERPRISE -eq 0 ]] && [[ $MANA_EAPSUCCESS -eq 1 ]]; then
-    echo "Please Enable EAP if wanting to perform WPE Attacks"
-    clean_exit
-fi 
-
 if [[ $ENTERPRISE -eq 1 ]] && [[ $MANA_EAPSUCCESS -eq 1 ]]; then
     cat << EOF >> $CONFDIR/hostapd.conf
 mana_eapsuccess=1
 EOF
 fi
-
-if [[ $ENTERPRISE -eq 0 ]] && [[ $MANA_EAPTLS -eq 1 ]]; then
-    echo "Please Enable EAP if wanting to perform WPE Attacks"
-    clean_exit
-fi 
 
 if [[ $ENTERPRISE -eq 1 ]] && [[ $MANA_EAPTLS -eq 1 ]]; then
     cat << EOF >> $CONFDIR/hostapd.conf
