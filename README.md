@@ -1,5 +1,5 @@
 # Berate_ap 
-Create_ap has been modified to run EAP networks and [hostapd-mana](https://github.com/sensepost/hostapd-mana) with multiple options
+[Create_ap](https://github.com/oblique/create_ap) has been modified to run EAP networks and [hostapd-mana](https://github.com/sensepost/hostapd-mana) with multiple options
 
 ## Setup
 This script requires hostapd-mana to be in the path.
