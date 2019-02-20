@@ -1929,6 +1929,8 @@ fi
 if [[ $MANA_LOGGING -eq 1 ]]; then
     cat << EOF >> $CONFDIR/hostapd.conf
 mana_outfile=${MANA_MANAOUT}
+track_sta_max_num=100
+track_sta_max_age=180
 EOF
 fi
 
