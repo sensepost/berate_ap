@@ -109,6 +109,9 @@ usage() {
     echo "  --mana-loud             Enable Mana loud mode"
     echo "                          Will respond with all seen access points to devices"
     echo "  --mana-whitelist <list> Provide a list of SSIDs to respond to"
+    echo "  --mana-logging          Enable Device logging to file, taxonomy enabled by default"
+    echo "  --mana-manaout <file>   Set location of output mana logging file"
+    echo "                          Default location is at /tmp/hostapd.manaout"
     echo
     # echo "Arbitary:"
     # echo "  --trifecta             Run one EAP, PSK and OPEN network"
@@ -668,6 +671,8 @@ MANA_EAPTLS=0
 MANA=0
 MANA_LOUD=0
 MANA_CREDOUT=/tmp/hostapd.credout
+MANA_LOGGING=0
+MANA_MANAOUT=/tmp/hostapd.manaout
 RADIUS_SERVER=
 RADIUS_SECRET=
 NAS_IDENT=
@@ -696,7 +701,7 @@ CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HI
              SHARE_METHOD IEEE80211N IEEE80211AC HT_CAPAB VHT_CAPAB DRIVER NO_VIRT COUNTRY FREQ_BAND
              NEW_MACADDR DAEMONIZE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
              SSID PASSPHRASE USE_PSK ENTERPRISE ENTERPRISE_CERTIFICATES_LOCATION ENTERPRISE_EAPUSER_FILE ENTERPRISE_PRIVATE_KEY_PASSWD MANA_WPE MANA_EAPSUCCESS MANA_EAPTLS
-             RADIUS_SECRET RADIUS_SERVER NAS_IDENT MANA_LOUD MANA MANA_SSID_WHITELIST MANA_MAC_ACL TRIFECTA MANA_CREDOUT)
+             RADIUS_SECRET RADIUS_SERVER NAS_IDENT MANA_LOUD MANA MANA_SSID_WHITELIST MANA_MAC_ACL TRIFECTA MANA_CREDOUT MANA_LOGGING MANA_MANAOUT)
 
 FIX_UNMANAGED=0
 LIST_RUNNING=0
@@ -1087,7 +1092,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:", "mana-logging", "mana-manaout:","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1168,6 +1173,15 @@ while :; do
             shift
             MANA_CREDOUT="$1"
             shift
+            ;;
+        --mana-manaout)
+            shift
+            MANA_MANAOUT="$1"
+            shift
+            ;;
+        --mana-logging)
+            shift
+            MANA_LOGGING=1
             ;;
         --nas-ident)
             shift
@@ -1463,11 +1477,13 @@ if ! can_be_sta_and_ap ${WIFI_IFACE}; then
     fi
 fi
 
-if [[ $MANA -eq 1 ]] || [[ $MANA_WPE -eq 1 ]]; then
-    HOSTAPD=$(which hostapd-mana)
-else
-    HOSTAPD=$(which hostapd)
-fi
+HOSTAPD=$(which hostapd-mana)
+
+# if [[ $MANA -eq 1 ]] || [[ $MANA_WPE -eq 1 ]]; then
+#     HOSTAPD=$(which hostapd-mana)
+# else
+#     HOSTAPD=$(which hostapd)
+# fi
 
 if [[ ! -x "$HOSTAPD" ]]; then
     echo "ERROR: hostapd not found." >&2
@@ -1881,6 +1897,11 @@ mana_eaptls=1
 EOF
 fi
 
+if [[ $MANA_LOGGING -eq 1 ]]; then
+    echo "MANA Logging requires the use of Mana, so enabling Mana."
+    MANA=1
+fi
+
 if [[ $MANA -eq 1 ]]; then
     cat << EOF >> $CONFDIR/hostapd.conf
 enable_mana=1
@@ -1900,7 +1921,15 @@ EOF
 fi
 
 if [[ $MANA_LOUD -eq 1 ]]; then
-    echo "mana_loud=1" >> $CONFDIR/hostapd.conf
+    cat << EOF >> $CONFDIR/hostapd.conf
+mana_loud=1
+EOF
+fi
+
+if [[ $MANA_LOGGING -eq 1 ]]; then
+    cat << EOF >> $CONFDIR/hostapd.conf
+mana_outfile=${MANA_MANAOUT}
+EOF
 fi
 
 if [[ $IEEE80211AC -eq 1 ]]; then
