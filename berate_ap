@@ -1092,7 +1092,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:", "mana-logging", "mana-manaout:","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:","mana-logging","mana-manaout:","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1897,7 +1897,7 @@ mana_eaptls=1
 EOF
 fi
 
-if [[ $MANA_LOGGING -eq 1 ]]; then
+if [[ $MANA_LOGGING -eq 1 ]] && [[ $MANA -eq 0 ]]; then
     echo "MANA Logging requires the use of Mana, so enabling Mana."
     MANA=1
 fi
