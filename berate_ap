@@ -1811,9 +1811,8 @@ if [[ $ENTERPRISE -eq 1 ]] && [[ -z $ENTERPRISE_EAPUSER_FILE ]] && [[ -z $RADIUS
     echo "Please see $CONFDIR/hostapd.eap_user to create your own"
     # I am uncertain if /usr/share/doc/hostapd/hostapd.eap_user is static on all dists.
     cat << EOF >> $CONFDIR/hostapd.eap_user
-*		PEAP,TTLS,TLS,FAST
-*		PEAP,TTLS-MSCHAPV2,MSCHAPV2,MD5,GTC,TTLS-PAP,TTLS-CHAP,TTLS-MSCHAP  "1234test"  [2]
-"t"     PEAP,TTLS-MSCHAPV2,MSCHAPV2,MD5,GTC,TTLS-PAP,TTLS-CHAP,TTLS-MSCHAP,TTLS  "1234test"  [2]
+*       PEAP,TTLS,TLS,MD5,GTC
+"t"         TTLS-MSCHAPV2,MSCHAPV2,MD5,GTC,TTLS-PAP,TTLS-CHAP,TTLS-MSCHAP  "1234test"  [2]
 EOF
     ENTERPRISE_EAPUSER_FILE=$CONFDIR/hostapd.eap_user
 fi
