@@ -47,7 +47,7 @@ Run Mana and be stingy by not providing any upstream Internet access:
 ## More Convincing Certificate
 
 When running your Rogue AP users may be presented with your certificate when authenticating, it is in your interest to make your certificate look as similar to the legitimate APs as possible. When running a EAP access point `berate_ap` will ask you to fill in fields to generate the certificate to be used, try input sensible values. 
-To get the values of the certificate in use by the legitimate AP use [this script](https://gist.github.com/singe/40bda2a1772aaf4903515cc4e436afe5) to extract the certificate from a packet capture: 
+To get the values of the certificate in use by the legitimate AP use [this script](https://gist.github.com/singe/40bda2a1772aaf4903515cc4e436afe5#gistcomment-2848828) to extract the certificate from a packet capture: 
 ```
 ./extract_EAP.sh -r <capture file>
 ```
