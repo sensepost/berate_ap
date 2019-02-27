@@ -80,6 +80,7 @@ usage() {
     echo "                          *Built in RADIUS server*"
     echo "  --eap-user-file         Full path to EAP user file"
     echo "                          Default will use Manas hostapd.eap_user"
+    echo "  --eap-cert-subj         Set or modify certificate subject"
     echo "  --eap-cert-path         Full path to wireless certificates"
     echo "                          Name of the certs at the location:"
     echo "                              - hostapd.ca.pem"
@@ -143,6 +144,7 @@ usage() {
     echo "  "$PROGNAME" --driver rtl871xdrv wlan0 eth0 MyAccessPoint MyPassPhrase"
     echo "  "$PROGNAME" --daemon wlan0 eth0 MyAccessPoint MyPassPhrase"
     echo "  "$PROGNAME" --stop wlan0"
+    echo "  "$PROGNAME" --eap --eap-cert-subj '/O=Internet Widgits Pty Ltd/ST=Some-State/C=AU' wlan0 eth0 MyAccessPoint"
     echo "  "$PROGNAME" --eap --eap-user-file /etc/hostapd/hostapd.eap_user wlan0 eth0 MyAccessPoint"
     echo "  "$PROGNAME" --trifecta wlan0 eth0 MyAccessPoint MyPassPhrase"
 }
@@ -675,6 +677,7 @@ MANA_CREDOUT=/tmp/hostapd.credout
 MANA_LOGGING=0
 MANA_MANAOUT=/tmp/hostapd.manaout
 COLOUR=0
+CERTIFICATE_SUBJ=
 RADIUS_SERVER=
 RADIUS_SECRET=
 NAS_IDENT=
@@ -702,7 +705,7 @@ REDIRECT_TO_LOCALHOST=0
 CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HIDDEN MAC_FILTER MAC_FILTER_ACCEPT ISOLATE_CLIENTS
              SHARE_METHOD IEEE80211N IEEE80211AC HT_CAPAB VHT_CAPAB DRIVER NO_VIRT COUNTRY FREQ_BAND
              NEW_MACADDR DAEMONIZE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
-             SSID PASSPHRASE USE_PSK ENTERPRISE ENTERPRISE_CERTIFICATES_LOCATION ENTERPRISE_EAPUSER_FILE ENTERPRISE_PRIVATE_KEY_PASSWD MANA_WPE MANA_EAPSUCCESS MANA_EAPTLS
+             SSID PASSPHRASE USE_PSK ENTERPRISE ENTERPRISE_CERTIFICATES_LOCATION ENTERPRISE_EAPUSER_FILE ENTERPRISE_PRIVATE_KEY_PASSWD MANA_WPE MANA_EAPSUCCESS MANA_EAPTLS CERT
              RADIUS_SECRET RADIUS_SERVER NAS_IDENT MANA_LOUD MANA MANA_SSID_WHITELIST MANA_MAC_ACL TRIFECTA MANA_CREDOUT MANA_LOGGING MANA_MANAOUT COLOUR)
 
 FIX_UNMANAGED=0
@@ -1094,7 +1097,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:","mana-logging","mana-manaout:","colour","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","eap-cert-subj:","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:","mana-logging","mana-manaout:","colour","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1142,6 +1145,11 @@ while :; do
         --mana-eaptls)
             shift
             MANA_EAPTLS=1
+            ;;
+        --eap-cert-subj)
+            shift
+            CERTIFICATE_SUBJ="$1"
+            shift
             ;;
         --radius-server)
             shift
@@ -1805,11 +1813,18 @@ if [[ $ENTERPRISE -eq 0 ]] && [[ $MANA_WPE -eq 1 ]]; then
 fi
 
 if [[ $ENTERPRISE -eq 1 ]] && [[ -z $ENTERPRISE_CERTIFICATES_LOCATION ]] && [[ -z $RADIUS_SERVER ]]; then
-    echo "Please Provide Certificate Details"
-    $(which openssl) req -nodes -new -x509 -keyout $CONFDIR/hostapd.key.pem -out $CONFDIR/hostapd.cert.pem
-    $(which openssl) dhparam -out $CONFDIR/hostapd.dh.pem 1024
-    cp $CONFDIR/hostapd.cert.pem $CONFDIR/hostapd.ca.pem
-    ENTERPRISE_CERTIFICATES_LOCATION=$CONFDIR
+    if [[ -n $CERTIFICATE_SUBJ ]]; then
+        $(which openssl) req -nodes -new -x509 -keyout $CONFDIR/hostapd.key.pem -out $CONFDIR/hostapd.cert.pem -subj "$CERTIFICATE_SUBJ"
+        $(which openssl) dhparam -out $CONFDIR/hostapd.dh.pem 1024
+        cp $CONFDIR/hostapd.cert.pem $CONFDIR/hostapd.ca.pem
+        ENTERPRISE_CERTIFICATES_LOCATION=$CONFDIR
+    else
+        echo "Please Provide Certificate Details"
+        $(which openssl) req -nodes -new -x509 -keyout $CONFDIR/hostapd.key.pem -out $CONFDIR/hostapd.cert.pem
+        $(which openssl) dhparam -out $CONFDIR/hostapd.dh.pem 1024
+        cp $CONFDIR/hostapd.cert.pem $CONFDIR/hostapd.ca.pem
+        ENTERPRISE_CERTIFICATES_LOCATION=$CONFDIR
+    fi
 fi
 
 if [[ $ENTERPRISE -eq 1 ]] && [[ -z $ENTERPRISE_EAPUSER_FILE ]] && [[ -z $RADIUS_SERVER ]]; then
