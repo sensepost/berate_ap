@@ -44,6 +44,24 @@ Run Mana and be stingy by not providing any upstream Internet access:
 
     berate_ap --trifecta --mana wlan0 eth0 MyAccessPoint -->
 
+## More Convincing Certificate
+
+When running your Rogue AP users may be presented with your certificate when authenticating, it is in your interest to make your certificate look as similar to the legitimate APs as possible. When running a EAP access point `berate_ap` will ask you to fill in fields to generate the certificate to be used, try input sensible values. 
+To get the values of the certificate in use by the legitimate AP use [this script](https://gist.github.com/singe/40bda2a1772aaf4903515cc4e436afe5) to extract the certificate from a packet capture: 
+```
+./extract_EAP.sh -r <capture file>
+```
+or interface in monitor mode:
+```
+airmon-ng start <interface> <channel>
+./extract_EAP.sh -i <interface>
+```
+you may then view the certificate with:
+```
+openssl x509 -text -inform der -in <capturedcert>.der
+```
+Which will allow you to see the values set in the cert so that with berate you may generate a more appealing looking AP.
+
 ## Features
 * Create an AP (Access Point) at any channel.
 * Choose one of the following encryptions: WPA, WPA2, WPA/WPA2, Open (no encryption).
