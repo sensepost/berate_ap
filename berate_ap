@@ -2146,11 +2146,13 @@ if [ $? -eq 0 ]; then
 fi
 
 if [[ $COLOUR -eq 1 ]]; then
-    txtbcyan=$(echo -e '\e[0;96m') #bright cyan
-    txtbgreen=$(echo -e '\e[0;92m') #bright green
+    txtbcyan=$(echo -e '\e[0;96m') #bright cyan - Colour MANA
+    txtbgreen=$(echo -e '\e[0;92m') #bright green - Colour Creds and Hashs
+    txtbred=$(echo -e '\e[0;91m') #bright red - Colour SSL and OpenSSL
     txtrst=$(echo -e '\e[0m')
     # Highlights the word MANA and Colours credentials green
-    $STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf | sed "s,MANA EAP.*,${txtbgreen}&${txtrst}, ; s/MANA - /${txtbcyan}MANA${txtrst} - /"
+    $STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf | \
+    sed "s,MANA EAP.*,${txtbgreen}&${txtrst}, ; s,\(SSL\|OpenSSL\).*,${txtbred}&${txtrst}, ; s/MANA - /${txtbcyan}MANA${txtrst} - /"
 else
     $STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf  
 fi
