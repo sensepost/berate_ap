@@ -2198,7 +2198,7 @@ if [[ $COLOUR -eq 1 ]]; then
     txtrst=$(echo -e '\e[0m')
     # Highlights the word MANA and Colours credentials green
     $STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf | \
-    sed "s,MANA EAP.*,${txtbgreen}&${txtrst}, ; s,\(SSL\|OpenSSL\).*,${txtbred}&${txtrst}, ; s/MANA - /${txtbcyan}MANA${txtrst} - /"
+    sed "s,MANA EAP.*,${txtbgreen}&${txtrst}, ; s,\(SSL\|OpenSSL\).*,${txtbred}&${txtrst}, ; s,MANA - ,${txtbcyan}MANA${txtrst} - , ; s,MANA: Captured.*,${txtbgreen}&${txtrst},"
 else
     $STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf  
 fi
