@@ -28,6 +28,10 @@ Mana WPE attacks are no longer done by default when using `--mana` and have to b
     
 Other Mana WPE options avaliable are `--mana-eapsuccess` and `--mana-eaptls`, the location of the credout file is by default `/tmp/hostapd.credout` but may be specified with `--mana-credout <file>` (Preferable to use full path). More information on these may be found in the [Hostapd-mana wiki](https://github.com/sensepost/hostapd-mana/wiki/MANA-EAP-Options-(aka-WPE)).
 
+Run Mana with [WPA capture](https://github.com/sensepost/hostapd-mana/wiki/MANA-WPA-2-Options-(handshakes)) enabled. This currently requires that mana attacks be disabled. hccapx will be placed at `/tmp/hostapd.hccapx`, this may be specified with `--mana-wpaout <file>`:
+
+    berate_ap --mana-wpa -n wlan0 <target Network Name> "ANYPASSWORD"
+
 Run Mana in loud mode to show devices every access point seen by Mana:
 
     berate_ap --eap --mana --mana-loud wlan0 eth0 MyAccessPoint 
