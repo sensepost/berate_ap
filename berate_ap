@@ -111,8 +111,16 @@ usage() {
     echo "                          Will respond with all seen access points to devices"
     echo "  --mana-whitelist <list> Provide a list of SSIDs to respond to"
     echo "  --mana-logging          Enable Device logging to file, taxonomy enabled by default"
+    echo "                          Default output location is at /tmp/hostapd.manaout"
     echo "  --mana-manaout <file>   Set location of output mana logging file"
-    echo "                          Default location is at /tmp/hostapd.manaout"
+    echo "MANA Other Options:"
+    echo "  --mana-wpa              Enable MANA WPA handshake capture"
+    echo "                          Mana can capture handshakes for users attempting to connect which are then placed"
+    echo "                          into hashcats hccpx format. "
+    echo "                          PLEASE NOTE: This attack currently does not work with mana enabled so the correct"
+    echo "                          ESSID will have to be specified"
+    echo "                          Default output location is at /tmp/hostapd.hccapx"
+    echo "  --mana-wpaout <file>    Set location of output for wpa-psk handshakes"
     echo "  --colour                Colourise MANA output and credential capture so its easier to distinguish"
     echo
     # echo "Arbitary:"
@@ -676,6 +684,8 @@ MANA_LOUD=0
 MANA_CREDOUT=/tmp/hostapd.credout
 MANA_LOGGING=0
 MANA_MANAOUT=/tmp/hostapd.manaout
+MANA_WPA=0
+MANA_WPAOUT=/tmp/hostapd.hccapx
 COLOUR=0
 CERTIFICATE_SUBJ=
 RADIUS_SERVER=
@@ -705,8 +715,9 @@ REDIRECT_TO_LOCALHOST=0
 CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HIDDEN MAC_FILTER MAC_FILTER_ACCEPT ISOLATE_CLIENTS
              SHARE_METHOD IEEE80211N IEEE80211AC HT_CAPAB VHT_CAPAB DRIVER NO_VIRT COUNTRY FREQ_BAND
              NEW_MACADDR DAEMONIZE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
-             SSID PASSPHRASE USE_PSK ENTERPRISE ENTERPRISE_CERTIFICATES_LOCATION ENTERPRISE_EAPUSER_FILE ENTERPRISE_PRIVATE_KEY_PASSWD MANA_WPE MANA_EAPSUCCESS MANA_EAPTLS CERT
-             RADIUS_SECRET RADIUS_SERVER NAS_IDENT MANA_LOUD MANA MANA_SSID_WHITELIST MANA_MAC_ACL TRIFECTA MANA_CREDOUT MANA_LOGGING MANA_MANAOUT COLOUR)
+             SSID PASSPHRASE USE_PSK ENTERPRISE ENTERPRISE_CERTIFICATES_LOCATION ENTERPRISE_EAPUSER_FILE ENTERPRISE_PRIVATE_KEY_PASSWD MANA_WPE 
+             MANA_EAPSUCCESS MANA_EAPTLS CERT RADIUS_SECRET RADIUS_SERVER NAS_IDENT MANA_LOUD MANA MANA_SSID_WHITELIST MANA_MAC_ACL 
+             TRIFECTA MANA_CREDOUT MANA_LOGGING MANA_MANAOUT MANA_WPAOUT MANA_WPA COLOUR)
 
 FIX_UNMANAGED=0
 LIST_RUNNING=0
@@ -1097,7 +1108,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","eap-cert-subj:","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:","mana-logging","mana-manaout:","colour","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","eap-cert-subj:","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:","mana-logging","mana-manaout:","mana-wpa","mana-wpaout:","colour","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1192,6 +1203,15 @@ while :; do
         --mana-logging)
             shift
             MANA_LOGGING=1
+            ;;
+        --mana-wpaout)
+            shift
+            MANA_WPAOUT="$1"
+            shift
+            ;;
+        --mana-wpa)
+            shift
+            MANA_WPA=1
             ;;
         --colour)
             shift
@@ -1920,6 +1940,17 @@ fi
 if [[ $MANA_LOGGING -eq 1 ]] && [[ $MANA -eq 0 ]]; then
     echo "MANA Logging requires the use of Mana, so enabling Mana."
     MANA=1
+fi
+
+if [[ $MANA_WPA -eq 1 ]]; then
+    if [[ $MANA -eq 1 ]]; then
+        echo "Capturing WPA handshakes cannot currently be done with MANA enabled. Disabling Mana"
+        MANA=0
+    fi
+    echo "Enabling MANA WPA handshake capture, please ensure you are trying to run a PSK AP"
+    cat << EOF >> $CONFDIR/hostapd.conf
+mana_wpaout=${MANA_WPAOUT}
+EOF
 fi
 
 if [[ $MANA -eq 1 ]]; then
