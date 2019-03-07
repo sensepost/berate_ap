@@ -113,6 +113,7 @@ usage() {
     echo "  --mana-logging          Enable Device logging to file, taxonomy enabled by default"
     echo "                          Default output location is at /tmp/hostapd.manaout"
     echo "  --mana-manaout <file>   Set location of output mana logging file"
+    echo
     echo "MANA Other Options:"
     echo "  --mana-wpa              Enable MANA WPA handshake capture"
     echo "                          Mana can capture handshakes for users attempting to connect which are then placed"
@@ -1520,7 +1521,7 @@ HOSTAPD=$(which hostapd-mana)
 # fi
 
 if [[ ! -x "$HOSTAPD" ]]; then
-    echo "ERROR: hostapd not found." >&2
+    echo "ERROR: hostapd-mana not found please link to or add hostapd-mana to your path." >&2
     exit 1
 fi
 
