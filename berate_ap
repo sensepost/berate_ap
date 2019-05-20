@@ -124,6 +124,13 @@ usage() {
     echo "  --mana-wpaout <file>    Set location of output for wpa-psk handshakes"
     echo "  --colour                Colourise MANA output and credential capture so its easier to distinguish"
     echo
+    echo "wpa_wycophant Options:"
+    echo "  --wpa-sycophant         Enable the enable_sycophant flag in MANA"
+    echo "                          wpa_sycophant is a tool used to relay MSCHAP authentication attempts"
+    echo "                          between a rogue AP and a legitimate AP"
+    echo "                          This may be used to authenticate to a legitimate AP using someone elses login attempt"
+    echo "                          similar to a tool like Impackets ntlmrelayx.py in the wired world."
+    echo "                          This option needs to be used in conjunction with https://github.com/sensepost/wpa_sycophant"
     # echo "Arbitary:"
     # echo "  --trifecta             Run one EAP, PSK and OPEN network"
     # echo 
@@ -682,6 +689,8 @@ MANA_EAPSUCCESS=0
 MANA_EAPTLS=0
 MANA=0
 MANA_LOUD=0
+ENABLE_SYCOPHANT=0
+SYCOPHANT_DIR=/tmp/
 MANA_CREDOUT=/tmp/hostapd.credout
 MANA_LOGGING=0
 MANA_MANAOUT=/tmp/hostapd.manaout
@@ -718,7 +727,7 @@ CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HI
              NEW_MACADDR DAEMONIZE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
              SSID PASSPHRASE USE_PSK ENTERPRISE ENTERPRISE_CERTIFICATES_LOCATION ENTERPRISE_EAPUSER_FILE ENTERPRISE_PRIVATE_KEY_PASSWD MANA_WPE 
              MANA_EAPSUCCESS MANA_EAPTLS CERT RADIUS_SECRET RADIUS_SERVER NAS_IDENT MANA_LOUD MANA MANA_SSID_WHITELIST MANA_MAC_ACL 
-             TRIFECTA MANA_CREDOUT MANA_LOGGING MANA_MANAOUT MANA_WPAOUT MANA_WPA COLOUR)
+             TRIFECTA MANA_CREDOUT MANA_LOGGING MANA_MANAOUT MANA_WPAOUT MANA_WPA COLOUR ENABLE_SYCOPHANT)
 
 FIX_UNMANAGED=0
 LIST_RUNNING=0
@@ -1109,7 +1118,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","eap-cert-subj:","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:","mana-logging","mana-manaout:","mana-wpa","mana-wpaout:","colour","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","eap-cert-subj:","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:","mana-logging","mana-manaout:","mana-wpa","mana-wpaout:","wpa-sycophant","colour","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1217,6 +1226,10 @@ while :; do
         --colour)
             shift
             COLOUR=1
+            ;;
+        --wpa-sycophant)
+            shift
+            ENABLE_SYCOPHANT=1
             ;;
         --nas-ident)
             shift
@@ -1833,6 +1846,11 @@ if [[ $ENTERPRISE -eq 0 ]] && [[ $MANA_WPE -eq 1 ]]; then
     ENTERPRISE=1
 fi
 
+if [[ $ENTERPRISE -eq 0 ]] && [[ $ENABLE_SYCOPHANT -eq 1 ]]; then
+    echo "To relay MSCHAPv2 the use of an enterprise rogue AP is required, so enabling EAP access point."
+    ENTERPRISE=1
+fi
+
 if [[ $ENTERPRISE -eq 1 ]] && [[ -z $ENTERPRISE_CERTIFICATES_LOCATION ]] && [[ -z $RADIUS_SERVER ]]; then
     if [[ -n $CERTIFICATE_SUBJ ]]; then
         $(which openssl) req -nodes -new -x509 -keyout $CONFDIR/hostapd.key.pem -out $CONFDIR/hostapd.cert.pem -subj "$CERTIFICATE_SUBJ"
@@ -1854,7 +1872,7 @@ if [[ $ENTERPRISE -eq 1 ]] && [[ -z $ENTERPRISE_EAPUSER_FILE ]] && [[ -z $RADIUS
     # I am uncertain if /usr/share/doc/hostapd/hostapd.eap_user is static on all dists.
     cat << EOF >> $CONFDIR/hostapd.eap_user
 *       PEAP,TTLS,TLS,MD5,GTC
-"t"         TTLS-MSCHAPV2,MSCHAPV2,MD5,GTC,TTLS-PAP,TTLS-CHAP,TTLS-MSCHAP  "1234test"  [2]
+"t"         MSCHAPV2,TTLS-MSCHAPV2,MD5,GTC,TTLS-PAP,TTLS-CHAP,TTLS-MSCHAP  "1234test"  [2]
 EOF
     ENTERPRISE_EAPUSER_FILE=$CONFDIR/hostapd.eap_user
 fi
@@ -1900,6 +1918,7 @@ EOF
     fi
 fi
 
+# This doesnt seem to work well in its current state, hence why its commented out of the help options.
 if [[ $TRIFECTA -eq 1 ]]; then 
     cat << EOF >> $CONFDIR/hostapd.conf
 # add PSK and OPEN
@@ -1929,6 +1948,14 @@ fi
 if [[ $ENTERPRISE -eq 1 ]] && [[ $MANA_EAPSUCCESS -eq 1 ]]; then
     cat << EOF >> $CONFDIR/hostapd.conf
 mana_eapsuccess=1
+EOF
+fi
+
+
+if [[ $ENTERPRISE -eq 1 ]] && [[ $ENABLE_SYCOPHANT -eq 1 ]]; then
+    cat << EOF >> $CONFDIR/hostapd.conf
+enable_sycophant=1
+sycophant_dir=${SYCOPHANT_DIR}
 EOF
 fi
 
