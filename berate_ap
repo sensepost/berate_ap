@@ -1854,13 +1854,13 @@ fi
 if [[ $ENTERPRISE -eq 1 ]] && [[ -z $ENTERPRISE_CERTIFICATES_LOCATION ]] && [[ -z $RADIUS_SERVER ]]; then
     if [[ -n $CERTIFICATE_SUBJ ]]; then
         $(which openssl) req -nodes -new -x509 -keyout $CONFDIR/hostapd.key.pem -out $CONFDIR/hostapd.cert.pem -subj "$CERTIFICATE_SUBJ"
-        $(which openssl) dhparam -out $CONFDIR/hostapd.dh.pem 1024
+        $(which openssl) dhparam -out $CONFDIR/hostapd.dh.pem 2048
         cp $CONFDIR/hostapd.cert.pem $CONFDIR/hostapd.ca.pem
         ENTERPRISE_CERTIFICATES_LOCATION=$CONFDIR
     else
         echo "Please Provide Certificate Details"
         $(which openssl) req -nodes -new -x509 -keyout $CONFDIR/hostapd.key.pem -out $CONFDIR/hostapd.cert.pem
-        $(which openssl) dhparam -out $CONFDIR/hostapd.dh.pem 1024
+        $(which openssl) dhparam -out $CONFDIR/hostapd.dh.pem 2048
         cp $CONFDIR/hostapd.cert.pem $CONFDIR/hostapd.ca.pem
         ENTERPRISE_CERTIFICATES_LOCATION=$CONFDIR
     fi
