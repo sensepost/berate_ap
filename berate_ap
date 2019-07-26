@@ -1261,12 +1261,20 @@ while :; do
         -w)
             shift
             WPA_VERSION="$1"
-            if [[ "$WPA_VERSION" == "3" ]]; then
-                KEY_MGMT="SAE"
-            else
-                KEY_MGMT="WPA-PSK"
-            fi
             [[ "$WPA_VERSION" == "2+1" ]] && WPA_VERSION=1+2
+            if [[ "$WPA_VERSION" == "3" ]]; then
+                WPA=2
+                KEY_MGMT="SAE"
+                PAIRWISE="CCMP"
+            elif [[ "$WPA_VERSION" == "2" ]]; then
+                WPA=2
+                KEY_MGMT="WPA-PSK"
+                PAIRWISE="CCMP"
+            elif [[ "$WPA_VERSION" == "1+2" ]]; then
+                WPA=3
+                KEY_MGMT="WPA-PSK"
+                PAIRWISE="CCMP TKIP"
+            fi
             shift
             ;;
         -g)
@@ -1672,6 +1680,9 @@ if [[ $(get_adapter_kernel_module ${WIFI_IFACE}) =~ ^rtl[0-9].*$ ]]; then
     if [[ -n "$PASSPHRASE" ]]; then
         echo "WARN: Realtek drivers usually have problems with WPA1, enabling -w 2" >&2
         WPA_VERSION=2
+        WPA=2
+        KEY_MGTM="WPA-PSK"
+        PAIRWISE="CCMP"
     fi
     echo "WARN: If AP doesn't work, please read: howto/realtek.md" >&2
 fi
@@ -1883,7 +1894,6 @@ EOF
 fi
 
 if [[ $ENTERPRISE -eq 1 ]]; then
-    [[ "$WPA_VERSION" == "1+2" ]] && WPA_VERSION=3
     if [[ -n $RADIUS_SERVER ]]; then
         [[ -z $RADIUS_PORT ]] && RADIUS_PORT="1812"
         [[ -z $NAS_IDENT ]] && NAS_IDENT=$(uuidgen)
@@ -1898,9 +1908,9 @@ auth_server_port=${RADIUS_PORT}
 auth_server_shared_secret=${RADIUS_SECRET}
 
 auth_algs=3
-wpa=${WPA_VERSION}
+wpa=${WPA}
 wpa_key_mgmt=WPA-EAP
-wpa_pairwise=CCMP TKIP
+wpa_pairwise=${PAIRWISE}
 EOF
     else
         cat << EOF >> $CONFDIR/hostapd.conf
@@ -1915,9 +1925,9 @@ private_key=${ENTERPRISE_CERTIFICATES_LOCATION}/hostapd.key.pem
 private_key_passwd=${ENTERPRISE_PRIVATE_KEY_PASSWD}
 
 auth_algs=3
-wpa=${WPA_VERSION}
+wpa=${WPA}
 wpa_key_mgmt=WPA-EAP
-wpa_pairwise=CCMP TKIP
+wpa_pairwise=${PAIRWISE}
 
 EOF
     fi
@@ -2031,17 +2041,16 @@ if [[ $IEEE80211N -eq 1 ]] || [[ $IEEE80211AC -eq 1 ]]; then
 fi
 
 if [[ -n "$PASSPHRASE" ]]; then
-    [[ "$WPA_VERSION" == "1+2" ]] && WPA_VERSION=3
     if [[ $USE_PSK -eq 0 ]]; then
         WPA_KEY_TYPE=passphrase
     else
         WPA_KEY_TYPE=psk
     fi
     cat << EOF >> $CONFDIR/hostapd.conf
-wpa=${WPA_VERSION}
+wpa=${WPA}
 wpa_${WPA_KEY_TYPE}=${PASSPHRASE}
 wpa_key_mgmt=${KEY_MGMT}
-wpa_pairwise=TKIP CCMP
+wpa_pairwise=${PAIRWISE}
 rsn_pairwise=CCMP
 EOF
 fi
