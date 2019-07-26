@@ -1530,13 +1530,13 @@ if ! can_be_sta_and_ap ${WIFI_IFACE}; then
     fi
 fi
 
-HOSTAPD=$(which hostapd-mana)
+#HOSTAPD=$(which hostapd-mana)
 
-# if [[ $MANA -eq 1 ]] || [[ $MANA_WPE -eq 1 ]]; then
-#     HOSTAPD=$(which hostapd-mana)
-# else
-#     HOSTAPD=$(which hostapd)
-# fi
+ if [[ $MANA -eq 1 ]] || [[ $MANA_WPE -eq 1 ]]; then
+     HOSTAPD=$(which hostapd-mana)
+ else
+     HOSTAPD=$(which hostapd)
+ fi
 
 if [[ ! -x "$HOSTAPD" ]]; then
     echo "ERROR: hostapd-mana not found please link to or add hostapd-mana to your path." >&2
