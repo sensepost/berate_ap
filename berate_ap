@@ -33,7 +33,7 @@ usage() {
     echo "  -h, --help              Show this help"
     echo "  --version               Print version number"
     echo "  -c <channel>            Channel number (default: 1)"
-    echo "  -w <WPA version>        Use 1 for WPA, use 2 for WPA2, 3 for WPA3, use 1+2 for WPA/2 (default: 1+2)"
+    echo "  -w <WPA version>        Use 1 for WPA, use 2 for WPA2, 3 for WPA3, use 1+2 for WPA/2 (default), or 2+3 for WPA3/2 transition"
     echo "  -n                      Disable Internet sharing (if you use this, don't pass"
     echo "                          the <interface-with-internet> argument)"
     echo "  -m <method>             Method for Internet sharing."
@@ -1264,10 +1264,17 @@ while :; do
             shift
             WPA_VERSION="$1"
             [[ "$WPA_VERSION" == "2+1" ]] && WPA_VERSION=1+2
+            [[ "$WPA_VERSION" == "3+2" ]] && WPA_VERSION=2+3
             if [[ "$WPA_VERSION" == "3" ]]; then
                 WPA=2
                 KEY_MGMT="SAE"
                 PAIRWISE="CCMP"
+                IEEE80211W="2" #MFP required for WPA3
+            elif [[ "$WPA_VERSION" == "2+3" ]]; then
+                WPA=2
+                KEY_MGMT="SAE WPA-PSK"
+                PAIRWISE="CCMP"
+                IEEE80211W="1"
             elif [[ "$WPA_VERSION" == "2" ]]; then
                 WPA=2
                 KEY_MGMT="WPA-PSK"
