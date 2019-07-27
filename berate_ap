@@ -54,7 +54,7 @@ usage() {
     echo "  --country <code>        Set two-letter country code for regularity (example: US)"
     echo "  --freq-band <GHz>       Set frequency band. Valid inputs: 2.4, 5 (default: 2.4)"
     echo "  --driver                Choose your WiFi adapter driver (default: nl80211)"
-    echo "  --ieee80211w            Enable IEEE 802.11w Management Frame Protection (MFP)"
+    echo "  --ieee80211w <1|2>      Enable IEEE 802.11w Management Frame Protection (MFP). 1 optional (default) 2 mandatory"
     echo "  --no-virt               Do not create virtual interface"
     echo "  --no-haveged            Do not run 'haveged' automatically when needed"
     echo "  --fix-unmanaged         If NetworkManager shows your interface as unmanaged after you"
@@ -1120,7 +1120,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","eap-cert-subj:","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:","mana-logging","mana-manaout:","mana-wpa","mana-wpaout:","wpa-sycophant","colour","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","ieee80211w","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","eap-cert-subj:","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:","mana-logging","mana-manaout:","mana-wpa","mana-wpaout:","wpa-sycophant","colour","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","ieee80211w:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1327,7 +1327,7 @@ while :; do
             ;;
         --ieee80211w)
             shift
-            IEEE80211W=1
+            IEEE80211W=$1
             ;;
         --no-virt)
             shift
@@ -1868,7 +1868,7 @@ fi
 
 if [[ $IEEE80211W -eq 1 ]]; then
     cat << EOF >> $CONFDIR/hostapd.conf
-ieee80211w=2
+ieee80211w=${IEEE80211W}
 EOF
 fi
 
