@@ -1873,7 +1873,7 @@ ht_capab=${HT_CAPAB}
 EOF
 fi
 
-if [[ $IEEE80211W -eq 1 ]]; then
+if [[ $IEEE80211W -gt 0 ]]; then
     cat << EOF >> $CONFDIR/hostapd.conf
 ieee80211w=${IEEE80211W}
 EOF
