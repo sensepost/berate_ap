@@ -54,7 +54,7 @@ usage() {
     echo "  --country <code>        Set two-letter country code for regularity (example: US)"
     echo "  --freq-band <GHz>       Set frequency band. Valid inputs: 2.4, 5 (default: 2.4)"
     echo "  --driver                Choose your WiFi adapter driver (default: nl80211)"
-    echo "  --ieee80211w <1|2>      Enable IEEE 802.11w Management Frame Protection (MFP). 1 optional (default) 2 mandatory"
+    echo "  --ieee80211w <0-2>      Enable IEEE 802.11w Management Frame Protection (MFP). 0 disabled (default), 1 optional , 2 mandatory"
     echo "  --no-virt               Do not create virtual interface"
     echo "  --no-haveged            Do not run 'haveged' automatically when needed"
     echo "  --fix-unmanaged         If NetworkManager shows your interface as unmanaged after you"
