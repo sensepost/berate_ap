@@ -77,7 +77,7 @@ usage() {
     echo "Enterprise Options:"
     echo "  --eap                   Enable Enterprise (EAP) wireless settings"
     echo "                          Default is to use built in RADIUS server"
-    echo 
+    echo
     echo "                          *Built in RADIUS server*"
     echo "  --eap-user-file         Full path to EAP user file"
     echo "                          Default will use Manas hostapd.eap_user"
@@ -90,7 +90,7 @@ usage() {
     echo "                              - hostapd.key.pem"
     echo "                          You will be prompted to generate a cert if no path is provided"
     echo "  --eap-key-passwd        If key requires a password"
-    echo 
+    echo
     echo "                          *Use external RADIUS server*"
     echo "  --radius-server         Use an external RADIUS server rather than built in"
     echo "                          Default port is 1812"
@@ -134,7 +134,7 @@ usage() {
     echo "                          This option needs to be used in conjunction with https://github.com/sensepost/wpa_sycophant"
     # echo "Arbitary:"
     # echo "  --trifecta             Run one EAP, PSK and OPEN network"
-    # echo 
+    # echo
     echo "Non-Bridging Options:"
     echo "  --no-dns                Disable dnsmasq DNS server"
     echo "  --no-dnsmasq            Disable dnsmasq server completely"
@@ -727,8 +727,8 @@ REDIRECT_TO_LOCALHOST=0
 CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HIDDEN MAC_FILTER MAC_FILTER_ACCEPT ISOLATE_CLIENTS
              SHARE_METHOD IEEE80211N IEEE80211AC IEEE80211W HT_CAPAB VHT_CAPAB DRIVER NO_VIRT COUNTRY FREQ_BAND
              NEW_MACADDR DAEMONIZE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
-             SSID PASSPHRASE USE_PSK ENTERPRISE ENTERPRISE_CERTIFICATES_LOCATION ENTERPRISE_EAPUSER_FILE ENTERPRISE_PRIVATE_KEY_PASSWD MANA_WPE 
-             MANA_EAPSUCCESS MANA_EAPTLS CERT RADIUS_SECRET RADIUS_SERVER NAS_IDENT MANA_LOUD MANA MANA_SSID_WHITELIST MANA_MAC_ACL 
+             SSID PASSPHRASE USE_PSK ENTERPRISE ENTERPRISE_CERTIFICATES_LOCATION ENTERPRISE_EAPUSER_FILE ENTERPRISE_PRIVATE_KEY_PASSWD MANA_WPE
+             MANA_EAPSUCCESS MANA_EAPTLS CERT RADIUS_SECRET RADIUS_SERVER NAS_IDENT MANA_LOUD MANA MANA_SSID_WHITELIST MANA_MAC_ACL
              TRIFECTA MANA_CREDOUT MANA_LOGGING MANA_MANAOUT MANA_WPAOUT MANA_WPA COLOUR ENABLE_SYCOPHANT)
 
 FIX_UNMANAGED=0
@@ -1141,12 +1141,12 @@ while :; do
         --eap)
             shift
             ENTERPRISE=1
-            ;;      
+            ;;
         --eap-user-file)
             shift
             ENTERPRISE_EAPUSER_FILE="$1"
             shift
-            ;;  
+            ;;
         --eap-cert-path)
             shift
             ENTERPRISE_CERTIFICATES_LOCATION="$1"
@@ -1156,7 +1156,7 @@ while :; do
             shift
             ENTERPRISE_PRIVATE_KEY_PASSWD="$1"
             shift
-            ;; 
+            ;;
         --mana-wpe)
             shift
             MANA_WPE=1
@@ -1546,11 +1546,21 @@ fi
 
 #HOSTAPD=$(which hostapd-mana)
 
- if [[ $MANA -eq 1 ]] || [[ $MANA_WPE -eq 1 ]]; then
-     HOSTAPD=$(which hostapd-mana)
- else
-     HOSTAPD=$(which hostapd)
- fi
+# List of evil so far:
+# $ENABLE_SYCOPHANT
+# $MANA
+# $MANA_WPE
+# $MANA_LOGGING
+
+if [[ $ENABLE_SYCOPHANT -eq 1 ]] || [[ $MANA -eq 1 ]] || [[ $MANA_WPE -eq 1 ]] || [[ $MANA_LOGGING -eq 1 ]]; then
+    NEED_MANA=1
+fi
+
+if [[ $NEED_MANA -eq 1 ]]; then
+    HOSTAPD=$(which hostapd-mana)
+else
+    HOSTAPD=$(which hostapd)
+fi
 
 if [[ ! -x "$HOSTAPD" ]]; then
     echo "ERROR: hostapd-mana not found please link to or add hostapd-mana to your path." >&2
@@ -1862,7 +1872,7 @@ ieee80211w=2
 EOF
 fi
 
-if [[ $TRIFECTA -eq 1 ]]; then 
+if [[ $TRIFECTA -eq 1 ]]; then
     ENTERPRISE=1
 cat << EOF >> $CONFDIR/hostapd.conf
 bssid=00:11:22:33:44:00
@@ -1946,7 +1956,7 @@ EOF
 fi
 
 # This doesnt seem to work well in its current state, hence why its commented out of the help options.
-if [[ $TRIFECTA -eq 1 ]]; then 
+if [[ $TRIFECTA -eq 1 ]]; then
     cat << EOF >> $CONFDIR/hostapd.conf
 # add PSK and OPEN
 bss=${WIFI_IFACE}_0
@@ -2254,7 +2264,7 @@ if [[ $COLOUR -eq 1 ]]; then
     $STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf | \
     sed "s,MANA EAP.*,${txtbgreen}&${txtrst}, ; s,\(SSL\|OpenSSL\).*,${txtbred}&${txtrst}, ; s,MANA - ,${txtbcyan}MANA${txtrst} - , ; s,MANA: Captured.*,${txtbgreen}&${txtrst},"
 else
-    $STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf  
+    $STDBUF_PATH $HOSTAPD $HOSTAPD_DEBUG_ARGS $CONFDIR/hostapd.conf
 fi
 
 HOSTAPD_PID=$!
