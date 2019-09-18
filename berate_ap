@@ -1265,25 +1265,6 @@ while :; do
             WPA_VERSION="$1"
             [[ "$WPA_VERSION" == "2+1" ]] && WPA_VERSION=1+2
             [[ "$WPA_VERSION" == "3+2" ]] && WPA_VERSION=2+3
-            if [[ "$WPA_VERSION" == "3" ]]; then
-                WPA=2
-                KEY_MGMT="SAE"
-                PAIRWISE="CCMP"
-                IEEE80211W="2" #MFP required for WPA3
-            elif [[ "$WPA_VERSION" == "2+3" ]]; then
-                WPA=2
-                KEY_MGMT="SAE WPA-PSK"
-                PAIRWISE="CCMP"
-                IEEE80211W="1"
-            elif [[ "$WPA_VERSION" == "2" ]]; then
-                WPA=2
-                KEY_MGMT="WPA-PSK"
-                PAIRWISE="CCMP"
-            elif [[ "$WPA_VERSION" == "1+2" ]]; then
-                WPA=3
-                KEY_MGMT="WPA-PSK"
-                PAIRWISE="CCMP TKIP"
-            fi
             shift
             ;;
         -g)
@@ -1334,7 +1315,7 @@ while :; do
             ;;
         --ieee80211w)
             shift
-            IEEE80211W=$1
+            IEEE80211W="$1"
             ;;
         --no-virt)
             shift
@@ -1558,6 +1539,26 @@ fi
 # $MANA
 # $MANA_WPE
 # $MANA_LOGGING
+if [[ "$WPA_VERSION" == "3" ]]; then
+    WPA=2
+    KEY_MGMT="SAE"
+    PAIRWISE="CCMP"
+    IEEE80211W="2" #MFP required for WPA3
+elif [[ "$WPA_VERSION" == "2+3" ]]; then
+    WPA=2
+    KEY_MGMT="SAE WPA-PSK"
+    PAIRWISE="CCMP"
+    IEEE80211W="1"
+elif [[ "$WPA_VERSION" == "2" ]]; then
+    WPA=2
+    KEY_MGMT="WPA-PSK"
+    PAIRWISE="CCMP"
+elif [[ "$WPA_VERSION" == "1+2" ]]; then
+    WPA=3
+    KEY_MGMT="WPA-PSK"
+    PAIRWISE="CCMP TKIP"
+fi
+
 
 if [[ $ENABLE_SYCOPHANT -eq 1 ]] || [[ $MANA -eq 1 ]] || [[ $MANA_WPE -eq 1 ]] || [[ $MANA_LOGGING -eq 1 ]]; then
     NEED_MANA=1
