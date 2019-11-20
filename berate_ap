@@ -124,8 +124,10 @@ usage() {
     echo "                          Default output location is at /tmp/hostapd.hccapx"
     echo "  --mana-wpaout <file>    Set location of output for wpa-psk handshakes"
     echo "  --colour                Colourise MANA output and credential capture so its easier to distinguish"
+    echo "  --vanilla               By default berate_ap will use hostapd_mana,"
+    echo "                          if you would like to use vanilla hostapd please use this flag"
     echo
-    echo "wpa_wycophant Options:"
+    echo "wpa_sycophant Options:"
     echo "  --wpa-sycophant         Enable the enable_sycophant flag in MANA"
     echo "                          wpa_sycophant is a tool used to relay MSCHAP authentication attempts"
     echo "                          between a rogue AP and a legitimate AP"
@@ -697,6 +699,7 @@ MANA_LOGGING=0
 MANA_MANAOUT=/tmp/hostapd.manaout
 MANA_WPA=0
 MANA_WPAOUT=/tmp/hostapd.hccapx
+VANILLA=0
 COLOUR=0
 CERTIFICATE_SUBJ=
 RADIUS_SERVER=
@@ -729,7 +732,7 @@ CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HI
              NEW_MACADDR DAEMONIZE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
              SSID PASSPHRASE USE_PSK ENTERPRISE ENTERPRISE_CERTIFICATES_LOCATION ENTERPRISE_EAPUSER_FILE ENTERPRISE_PRIVATE_KEY_PASSWD MANA_WPE
              MANA_EAPSUCCESS MANA_EAPTLS CERT RADIUS_SECRET RADIUS_SERVER NAS_IDENT MANA_LOUD MANA MANA_SSID_WHITELIST MANA_MAC_ACL
-             TRIFECTA MANA_CREDOUT MANA_LOGGING MANA_MANAOUT MANA_WPAOUT MANA_WPA COLOUR ENABLE_SYCOPHANT)
+             TRIFECTA MANA_CREDOUT MANA_LOGGING MANA_MANAOUT MANA_WPAOUT MANA_WPA COLOUR ENABLE_SYCOPHANT VANILLA)
 
 FIX_UNMANAGED=0
 LIST_RUNNING=0
@@ -1120,7 +1123,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","eap-cert-subj:","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","mana-macacl:","mana-logging","mana-manaout:","mana-wpa","mana-wpaout:","wpa-sycophant","colour","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","ieee80211w:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","eap-cert-subj:","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","vanilla","mana-macacl:","mana-logging","mana-manaout:","mana-wpa","mana-wpaout:","wpa-sycophant","colour","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","ieee80211w:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1228,6 +1231,10 @@ while :; do
         --colour)
             shift
             COLOUR=1
+            ;;
+        --vanilla)
+            shift
+            VANILLA=1
             ;;
         --wpa-sycophant)
             shift
@@ -1560,14 +1567,14 @@ elif [[ "$WPA_VERSION" == "1+2" ]]; then
 fi
 
 
-if [[ $ENABLE_SYCOPHANT -eq 1 ]] || [[ $MANA -eq 1 ]] || [[ $MANA_WPE -eq 1 ]] || [[ $MANA_LOGGING -eq 1 ]]; then
-    NEED_MANA=1
-fi
+# if [[ $ENABLE_SYCOPHANT -eq 1 ]] || [[ $MANA -eq 1 ]] || [[ $MANA_WPE -eq 1 ]] || [[ $MANA_LOGGING -eq 1 ]]; then
+#     NEED_MANA=1
+# fi
 
-if [[ $NEED_MANA -eq 1 ]]; then
-    HOSTAPD=$(which hostapd-mana)
-else
+if [[ $VANILLA -eq 1 ]]; then
     HOSTAPD=$(which hostapd)
+else
+    HOSTAPD=$(which hostapd-mana)
 fi
 
 if [[ ! -x "$HOSTAPD" ]]; then
