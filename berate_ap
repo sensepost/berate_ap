@@ -1568,7 +1568,7 @@ elif [[ "$WPA_VERSION" == "1+2" ]]; then
 fi
 
 
-# if [[ $ENABLE_SYCOPHANT -eq 1 ]] || [[ $MANA -eq 1 ]] || [[ $MANA_WPE -eq 1 ]] || [[ $MANA_LOGGING -eq 1 ]]; then
+# if [[ $ENABLE_SYCOPHANT -eq 1 ]] || [[ $MANA -eq 1 ]] || [[ $MANA_WPE -eq 1 ]] || [[ $MANA_LOGGING -eq 1 ]] || [[ $MANA_WPA -eq 1 ]]; then
 #     NEED_MANA=1
 # fi
 
