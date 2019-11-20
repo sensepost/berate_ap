@@ -126,6 +126,7 @@ usage() {
     echo "  --colour                Colourise MANA output and credential capture so its easier to distinguish"
     echo "  --vanilla               By default berate_ap will use hostapd_mana,"
     echo "                          if you would like to use vanilla hostapd please use this flag"
+    echo "                          Using this flag will prevent evil mana operations"
     echo
     echo "wpa_sycophant Options:"
     echo "  --wpa-sycophant         Enable the enable_sycophant flag in MANA"
