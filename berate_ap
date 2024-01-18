@@ -1773,9 +1773,9 @@ if [ $QRCODE -eq 1 ] ; then
     if [ $ENTERPRISE -eq 0 ] && [ $USE_PSK -eq 0 ] ; then
         if command -v qrencode >/dev/null 2>&1 ; then
           if [ ${#PASSPHRASE} -gt 0 ] ; then
-            qrencode -m 2 -t utf8 <<< "WIFI:S:$SSID;;"
-          else
             qrencode -m 2 -t utf8 <<< "WIFI:S:$SSID;T:WPA;P:$PASSPHRASE;;"
+          else
+            qrencode -m 2 -t utf8 <<< "WIFI:S:$SSID;;"
           fi
         else
           echo "qrencode not found, skip QR code."
