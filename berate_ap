@@ -42,6 +42,7 @@ usage() {
     echo "                               'none' for no Internet sharing (equivalent to -n)"
     echo "  --psk                   Use 64 hex digits pre-shared-key instead of passphrase"
     echo "  --hidden                Make the Access Point hidden (do not broadcast the SSID)"
+    echo "  --qrcode                Show the qrcode of the created Access Point"
     echo "  --mac-filter            Enable MAC address filtering"
     echo "  --mac-filter-accept     Location of MAC address filter list (defaults to /etc/hostapd/hostapd.accept)"
     echo "  --redirect-to-localhost If -n is set, redirect every web request to localhost (useful for public information networks)"
@@ -682,6 +683,7 @@ NO_DNS=0
 NO_DNSMASQ=0
 DNS_PORT=
 HIDDEN=0
+QRCODE=0
 MAC_FILTER=0
 MAC_FILTER_ACCEPT=/etc/hostapd/hostapd.accept
 ENTERPRISE=0
@@ -728,7 +730,7 @@ USE_PSK=0
 HOSTAPD_DEBUG_ARGS=
 REDIRECT_TO_LOCALHOST=0
 
-CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HIDDEN MAC_FILTER MAC_FILTER_ACCEPT ISOLATE_CLIENTS
+CONFIG_OPTS=(CHANNEL GATEWAY WPA_VERSION ETC_HOSTS DHCP_DNS NO_DNS NO_DNSMASQ HIDDEN QRCODE MAC_FILTER MAC_FILTER_ACCEPT ISOLATE_CLIENTS
              SHARE_METHOD IEEE80211N IEEE80211AC IEEE80211W HT_CAPAB VHT_CAPAB DRIVER NO_VIRT COUNTRY FREQ_BAND
              NEW_MACADDR DAEMONIZE NO_HAVEGED WIFI_IFACE INTERNET_IFACE
              SSID PASSPHRASE USE_PSK ENTERPRISE ENTERPRISE_CERTIFICATES_LOCATION ENTERPRISE_EAPUSER_FILE ENTERPRISE_PRIVATE_KEY_PASSWD MANA_WPE
@@ -1124,7 +1126,7 @@ for ((i=0; i<$#; i++)); do
     fi
 done
 
-GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","eap-cert-subj:","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","vanilla","mana-macacl:","mana-logging","mana-manaout:","mana-wpa","mana-wpaout:","wpa-sycophant","colour","trifecta","help","hidden","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","ieee80211w:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
+GETOPT_ARGS=$(getopt -o hc:w:g:de:nm: -l "eap","eap-user-file:","eap-cert-path:","eap-key-passwd:","mana-wpe","mana-eapsuccess","mana-eaptls","eap-cert-subj:","radius-server:","radius-secret:","nas-ident:","mana","mana-loud","mana-credout:","mana-whitelist:","vanilla","mana-macacl:","mana-logging","mana-manaout:","mana-wpa","mana-wpaout:","wpa-sycophant","colour","trifecta","help","hidden","qrcode","hostapd-debug:","redirect-to-localhost","mac-filter","mac-filter-accept:","isolate-clients","ieee80211n","ieee80211ac","ht_capab:","vht_capab:","driver:","ieee80211w:","no-virt","fix-unmanaged","country:","freq-band:","mac:","dhcp-dns:","daemon","stop:","list","list-running","list-clients:","version","psk","no-haveged","no-dns","no-dnsmasq","mkconfig:","config:" -n "$PROGNAME" -- "$@")
 [[ $? -ne 0 ]] && exit 1
 eval set -- "$GETOPT_ARGS"
 
@@ -1141,6 +1143,10 @@ while :; do
         --hidden)
             shift
             HIDDEN=1
+            ;;
+        --qrcode)
+            shift
+            QRCODE=1
             ;;
         --eap)
             shift
@@ -1761,6 +1767,12 @@ fi
 
 if [[ $USE_IWCONFIG -eq 0 ]]; then
     iw dev ${WIFI_IFACE} set power_save off
+fi
+
+if [ $QRCODE -eq 1 ] && command -v qrencode >/dev/null 2>&1 ; then
+  qrencode -m 2 -t utf8 <<< "WIFI:S:$SSID;T:WPA;P:$PASSPHRASE;;"
+else
+  echo "qrencode not found, skip qrcode."
 fi
 
 if [[ $NO_VIRT -eq 0 ]]; then
