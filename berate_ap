@@ -1567,7 +1567,7 @@ if [[ "$WPA_VERSION" == "3" ]]; then
     IEEE80211W="2" #MFP required for WPA3
 elif [[ "$WPA_VERSION" == "2+3" ]]; then
     WPA=2
-    KEY_MGMT="SAE WPA-PSK"
+    KEY_MGMT="WPA-PSK SAE"
     PAIRWISE="CCMP"
     IEEE80211W="1"
 elif [[ "$WPA_VERSION" == "2" ]]; then
