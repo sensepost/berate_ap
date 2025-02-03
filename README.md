@@ -142,10 +142,10 @@ Which will allow you to see the values set in the cert so that with berate you m
 ## Systemd service
 Using the persistent [systemd](https://wiki.archlinux.org/index.php/systemd#Basic_systemctl_usage) service
 ### Start service immediately:
-    systemctl start create_ap
+    systemctl start berate_ap
 
 ### Start on boot:
-    systemctl enable create_ap
+    systemctl enable berate_ap
 
 
 ## License
